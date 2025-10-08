@@ -1,1 +1,2 @@
-# ug-district-gen-ai-api
+# UG District Data Query API
+

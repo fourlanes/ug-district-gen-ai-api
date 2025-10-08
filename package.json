@@ -1,0 +1,22 @@
+{
+  "name": "ug-district-gen-ai-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev --local",
+    "start": "wrangler dev",
+    "cf-typegen": "wrangler types"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.13.1",
+  "dependencies": {
+    "openai": "^6.1.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.41.0"
+  }
+}
