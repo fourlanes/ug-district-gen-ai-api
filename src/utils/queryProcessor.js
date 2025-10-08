@@ -6,6 +6,26 @@ import { getDataSchema } from './dataLoader.js';
 import { getSubcountyBreakdown } from './metrics.js';
 
 /**
+ * Clean a location slug to human-readable format
+ * @param {string} value - Location value with possible prefix
+ * @returns {string} Human-readable location name
+ */
+function cleanLocationNameForDisplay(value) {
+	if (!value) return '';
+
+	// Remove prefixes like 'd-', 's-', 'p-', 'v-'
+	let cleaned = value.replace(/^[dspv]-/, '');
+
+	// Convert slug format to title case
+	cleaned = cleaned
+		.split('-')
+		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
+
+	return cleaned;
+}
+
+/**
  * Build OpenAI prompt from query context
  * @param {string} query - User's natural language query
  * @param {Object} location - Location context
@@ -17,11 +37,43 @@ import { getSubcountyBreakdown } from './metrics.js';
 export function buildOpenAIPrompt(query, location, category, metrics, facilityData) {
 	const schema = getDataSchema(category, facilityData);
 
-	// Build location context string
-	let locationContext = `District: ${location.district}`;
-	if (location.subcounty) locationContext += `, Subcounty: ${location.subcounty}`;
-	if (location.parish) locationContext += `, Parish: ${location.parish}`;
-	if (location.village) locationContext += `, Village: ${location.village}`;
+	// Build location context string with clean names
+	const districtName = cleanLocationNameForDisplay(location.district);
+	let locationContext = `District: ${districtName}`;
+
+	if (location.subcounty) {
+		// Extract actual subcounty name (remove district prefix if present)
+		let subcountyName = cleanLocationNameForDisplay(location.subcounty);
+		if (subcountyName.startsWith(districtName + ' ')) {
+			subcountyName = subcountyName.substring(districtName.length + 1);
+		}
+		locationContext += `, Subcounty: ${subcountyName}`;
+	}
+
+	if (location.parish) {
+		// Parish names can contain district and subcounty prefixes - extract just the parish
+		let parishName = cleanLocationNameForDisplay(location.parish);
+		// Remove district prefix
+		if (parishName.startsWith(districtName + ' ')) {
+			parishName = parishName.substring(districtName.length + 1);
+		}
+		// If subcounty is also in the string, remove it too
+		if (location.subcounty) {
+			let subcountyName = cleanLocationNameForDisplay(location.subcounty);
+			if (subcountyName.startsWith(districtName + ' ')) {
+				subcountyName = subcountyName.substring(districtName.length + 1);
+			}
+			if (parishName.startsWith(subcountyName + ' ')) {
+				parishName = parishName.substring(subcountyName.length + 1);
+			}
+		}
+		locationContext += `, Parish: ${parishName}`;
+	}
+
+	if (location.village) {
+		const villageName = cleanLocationNameForDisplay(location.village);
+		locationContext += `, Village: ${villageName}`;
+	}
 
 	// Get subcounty breakdown for comparison queries
 	const subcountyData = getSubcountyBreakdown(facilityData, null);

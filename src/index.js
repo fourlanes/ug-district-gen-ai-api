@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { loadCSVData, loadLocations } from './utils/dataLoader.js';
+import { loadCSVData, loadLocations, getLocationByCode } from './utils/dataLoader.js';
 import { calculateMetrics } from './utils/metrics.js';
 import { buildOpenAIPrompt, validateResponse } from './utils/queryProcessor.js';
 
@@ -66,9 +66,22 @@ export default {
 
 			console.log('Cache miss, processing query:', { query, location, category });
 
-			// Load relevant data
-			const facilityData = await loadCSVData(location.district, category);
-			const locations = await loadLocations();
+			// Load locations hierarchy
+			const locations = await loadLocations(env);
+
+			// Find district by code
+			const district = getLocationByCode(locations, location.district);
+			if (!district || district.type !== 'district') {
+				return jsonResponse({
+					type: 'clarification',
+					text: `District with code "${location.district}" not found. Please check the location.`,
+					suggestions: [],
+					timestamp: new Date().toISOString()
+				}, 400);
+			}
+
+			// Load facility data using district name for file path and location codes for filtering
+			const facilityData = await loadCSVData(district.name, category, env, location);
 
 			// Calculate aggregated metrics
 			const metrics = calculateMetrics(facilityData, location, category);

@@ -182,16 +182,16 @@ function calculateHealthMetrics(facilities, location) {
 		}
 
 		// Services
-		if (isYes(facility.hiv_services || facility.HIV)) {
+		if (isYes(facility.hiv_services || facility.HIV || facility.has_hiv_tb_care || facility.hivaids_and_tb_care1)) {
 			metrics.services.offeringHIV++;
 		}
-		if (isYes(facility.maternal_services || facility.Maternal)) {
+		if (isYes(facility.maternal_services || facility.Maternal || facility.has_maternal_health)) {
 			metrics.services.offeringMaternal++;
 		}
 		if (isYes(facility.child_health || facility.Child_Health)) {
 			metrics.services.offeringChildHealth++;
 		}
-		if (isYes(facility.immunization || facility.Immunization)) {
+		if (isYes(facility.immunization || facility.Immunization || facility.has_immunization || facility.immunization_services1)) {
 			metrics.services.offeringImmunization++;
 		}
 	});
