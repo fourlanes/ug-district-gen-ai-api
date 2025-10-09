@@ -28,17 +28,18 @@ function cleanLocationNameForDisplay(value) {
 /**
  * Build OpenAI prompt from query context
  * @param {string} query - User's natural language query
- * @param {Object} location - Location context
+ * @param {Object} location - Location context with codes
  * @param {string} category - 'health' or 'education'
  * @param {Object} metrics - Calculated metrics
  * @param {Array} facilityData - Raw facility data
+ * @param {Object} district - Resolved district object with name
  * @returns {string} Formatted prompt for OpenAI
  */
-export function buildOpenAIPrompt(query, location, category, metrics, facilityData) {
+export function buildOpenAIPrompt(query, location, category, metrics, facilityData, district = null) {
 	const schema = getDataSchema(category, facilityData);
 
-	// Build location context string with clean names
-	const districtName = cleanLocationNameForDisplay(location.district);
+	// Build location context string - use resolved district name if available
+	const districtName = district?.name || cleanLocationNameForDisplay(location.district);
 	let locationContext = `District: ${districtName}`;
 
 	if (location.subcounty) {

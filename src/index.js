@@ -89,7 +89,7 @@ export default {
 			// Build OpenAI prompt and get response
 			const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
 
-			const prompt = buildOpenAIPrompt(query, location, category, metrics, facilityData);
+			const prompt = buildOpenAIPrompt(query, location, category, metrics, facilityData, district);
 
 			const startTime = Date.now();
 			const completion = await openai.chat.completions.create({
